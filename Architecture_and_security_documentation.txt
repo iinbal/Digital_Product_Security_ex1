@@ -1,0 +1,37 @@
+1. Security Design Decisions
+Argon2id Hashing: We selected Argon2id over Bcrypt because Argon2 is memory-hard, making it significantly more resistant to GPU/ASIC brute-force attacks, which is crucial for a public-facing dating platform where user lists might be targeted.
+
+Session vs. JWT:
+
+Browser: We use Server-Side Sessions (Database backed). This allows immediate revocation (Panic Button) which is critical for dating safety (harassment scenarios).
+
+API/Mobile: We use Short-lived JWTs paired with Rotated Refresh Tokens. This balances performance with security.
+
+Double Hashing: Session Tokens are generated with high entropy (64 bytes), but stored as SHA-256 hashes in the database. Even if the DB is dumped, attackers cannot hijack active sessions without the raw cookie value.
+
+2. Dating Platform Specific Threat Model
+Stalking & Harassment: Addressed via granular Session scopes and rate limiting checks in models.py and middleware.py.
+
+Catfishing: is_identity_verified column enforces logic where unverified users cannot access sensitive location data.
+
+Device Theft: Session rotation and strict IP/User-Agent binding ensure that a stolen session cookie cannot be easily reused on a different device.
+
+3. Key Management
+Separation of Concerns:
+
+SECRET_KEY: Flask Session signing.
+
+JWT_SIGNING_KEY: HMAC for API tokens.
+
+DATA_ENCRYPTION_KEY: AES-256 key for encrypting refresh tokens and MFA secrets at rest.
+
+Implementation: All keys are loaded via pydantic-settings from the environment, ensuring no secrets exist in the codebase.
+
+4. Integration Guidelines
+Environment: Set .env with strong random keys (generate using openssl rand -hex 32).
+
+Database: Run migrations. Ensure the DB user has limited scope.
+
+Deployment: Must run behind Nginx/Apache with SSL termination. The Secure cookie flag prevents login over HTTP.
+
+Cleanup: Configure a cron job to delete expired sessions from the sessions table daily to prevent bloat.

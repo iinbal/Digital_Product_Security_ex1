@@ -1,0 +1,14 @@
+secure_dating_auth/
+├── __init__.py
+├── config.py           # Configuration and Environment Variables
+├── models.py           # Database Schema (SQLAlchemy)
+├── crypto.py           # Low-level encryption and hashing
+├── utils.py            # Validators and Helpers
+├── mfa.py              # TOTP and Backup Codes
+├── session.py          # Session Management Logic
+├── auth.py             # Core Authentication Logic
+├── middleware.py       # Rate limiting and Request handling
+└── audit.py            # Security Logging
+requirements.txt        # Dependencies
+main.py                 # Example Flask Usage Application
+README.md               # Architecture Documentation
