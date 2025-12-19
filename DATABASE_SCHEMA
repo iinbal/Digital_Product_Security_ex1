@@ -1,0 +1,49 @@
+-- Users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_email_verified BOOLEAN DEFAULT FALSE,
+    is_locked BOOLEAN DEFAULT FALSE,
+    locked_until TIMESTAMP,
+    mfa_enabled BOOLEAN DEFAULT FALSE,
+    mfa_secret VARCHAR(32),
+    mfa_backup_codes TEXT,
+    role VARCHAR(50) DEFAULT 'user',
+    date_of_birth TIMESTAMP,
+    age_verified BOOLEAN DEFAULT FALSE,
+    profile_visibility VARCHAR(20) DEFAULT 'public',
+    location_sharing_enabled BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP,
+    password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_email ON users(email);
+CREATE INDEX idx_user_active ON users(is_active);
+CREATE INDEX idx_user_role ON users(role);
+
+-- Sessions table
+CREATE TABLE sessions (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(64) UNIQUE NOT NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(500),
+    device_fingerprint VARCHAR(64),
+    platform VARCHAR(20) DEFAULT 'web',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_activity_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    invalidated_at TIMESTAMP,
+    invalidation_reason VARCHAR(100)
+);
+
+CREATE INDEX idx_session_id ON sessions(session_id);
+CREATE INDEX idx_session_user ON sessions(user_id);
+CREATE INDEX idx_session_active ON sessions(is_active);
+
+-- All other tables follow the models.py structure
